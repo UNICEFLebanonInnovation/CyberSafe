@@ -1,0 +1,146 @@
+openapi: 3.1.0
+info:
+  title: CyberSafe Lebanon API
+  version: 1.0.0
+  description: MVP reference API contract. Expand generated schemas from shared Zod DTOs.
+servers:
+  - url: https://api.cybersafe.example/api/v1
+paths:
+  /sessions/guest:
+    post:
+      summary: Create an anonymous guest session
+      responses:
+        '201':
+          description: Guest session created
+  /me:
+    get:
+      summary: Get current user/session profile
+      responses:
+        '200':
+          description: Current profile
+  /analyses:
+    post:
+      summary: Create a text, URL, or image analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnalysisRequest'
+      responses:
+        '202':
+          description: Analysis accepted
+    get:
+      summary: List saved analyses for current actor
+      responses:
+        '200':
+          description: Analysis list
+  /analyses/{analysisId}:
+    parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+    get:
+      summary: Get analysis status/result
+      responses:
+        '200':
+          description: Analysis
+        '404':
+          description: Not found
+    delete:
+      summary: Delete analysis
+      responses:
+        '204':
+          description: Deleted
+  /analyses/{analysisId}/feedback:
+    parameters:
+      - $ref: '#/components/parameters/AnalysisId'
+    post:
+      summary: Submit analysis feedback
+      responses:
+        '201':
+          description: Feedback stored
+  /conversations:
+    post:
+      summary: Start a CyberBuddy conversation
+      responses:
+        '201':
+          description: Conversation created
+    get:
+      summary: List conversations
+      responses:
+        '200':
+          description: Conversation list
+  /conversations/{conversationId}/messages:
+    post:
+      summary: Send a message to CyberBuddy
+      responses:
+        '200':
+          description: Assistant response
+  /incident-types:
+    get:
+      summary: List supported incident types
+      responses:
+        '200':
+          description: Incident types
+  /incidents/triage:
+    post:
+      summary: Resolve incident inputs to an approved playbook/next step
+      responses:
+        '200':
+          description: Triage result
+  /reporting-routes:
+    get:
+      summary: List current verified reporting/help routes
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: locale
+          schema: { type: string }
+      responses:
+        '200':
+          description: Routes
+  /content:
+    get:
+      summary: Browse published learning content
+      responses:
+        '200':
+          description: Content list
+  /alerts:
+    get:
+      summary: Get current verified alerts
+      responses:
+        '200':
+          description: Alerts
+components:
+  parameters:
+    AnalysisId:
+      in: path
+      name: analysisId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    CreateAnalysisRequest:
+      oneOf:
+        - type: object
+          required: [inputType, text, locale]
+          properties:
+            inputType: { const: TEXT }
+            text: { type: string, minLength: 1, maxLength: 10000 }
+            locale: { type: string }
+        - type: object
+          required: [inputType, url, locale]
+          properties:
+            inputType: { const: URL }
+            url: { type: string, format: uri, maxLength: 2048 }
+            locale: { type: string }
+        - type: object
+          required: [inputType, locale]
+          properties:
+            inputType: { const: IMAGE }
+            locale: { type: string }
+    RiskLevel:
+      type: string
+      enum: [LOW_CONCERN, CAUTION, HIGH_RISK, INSUFFICIENT_INFORMATION]
