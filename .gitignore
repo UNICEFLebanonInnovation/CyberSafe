@@ -10,15 +10,3 @@ build/
 .agents/
 .windsurf/
 skills-lock.json
-node_modules/
-dist/
-.next/
-*.log
-.DS_Store
-.env
-coverage/
-build/
-.claude/
-.agents/
-.windsurf/
-skills-lock.json
